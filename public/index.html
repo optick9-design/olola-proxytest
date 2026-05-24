@@ -176,7 +176,10 @@ async function connect() {
     renderTable();
     setAlert("ok",`✅ 연결 성공! 상품 ${prods.length}개 · 주문 ${ords.length}건 · 고객 ${custs.length}명`);
   } catch(e) {
-    setAlert("err",`❌ ${e.message}`);
+    const msg = typeof e.message === "string"
+      ? e.message
+      : JSON.stringify(e.message || e);
+    setAlert("err", `❌ ${msg}`);
   }
 }
 
