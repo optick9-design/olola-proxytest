@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/cafe24.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  }
+}
