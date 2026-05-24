@@ -1,0 +1,5 @@
+json{
+  "name": "olola-proxy",
+  "version": "1.0.0",
+  "description": "OLOLA Cafe24 API Proxy"
+}
