@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OLOLA Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#09090e;color:#ede8f2;font-family:'Segoe UI',sans-serif;min-height:100vh}
+.topbar{background:linear-gradient(90deg,#100a16,#0e0e18);border-bottom:1px solid #22222e;
+  padding:14px 28px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50}
+.logo{font-size:20px;font-weight:800;letter-spacing:.2em;color:#e8a8c4}
+.tag{font-size:10px;color:#786880;letter-spacing:.18em;margin-top:2px}
+.main{padding:22px 28px;max-width:1180px;margin:0 auto}
+.card{background:#111118;border:1px solid #22222e;border-radius:14px;
+  padding:20px 24px;margin-bottom:18px}
+.row{display:flex;gap:11px;align-items:flex-end;margin-bottom:13px}
+.col{flex:1}.col3{flex:3}
+label{display:block;font-size:11px;color:#786880;letter-spacing:.09em;margin-bottom:5px}
+input{background:#18181f;border:1px solid #22222e;border-radius:8px;color:#ede8f2;
+  padding:9px 13px;font-size:13px;width:100%;outline:none}
+input:focus{border-color:#b05888}
+.btn{background:linear-gradient(135deg,#b05888,#803060);border:none;
+  border-radius:8px;color:#fff;padding:9px 20px;font-size:13px;
+  font-weight:600;cursor:pointer;white-space:nowrap}
+.btn-ghost{background:transparent;border:1px solid #22222e;border-radius:8px;
+  color:#786880;padding:9px 16px;font-size:13px;cursor:pointer}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}
+.stat{background:#111118;border:1px solid #22222e;border-radius:12px;
+  padding:18px 20px;position:relative;overflow:hidden}
+.stat-lbl{font-size:11px;color:#786880;letter-spacing:.1em;margin-bottom:7px}
+.stat-val{font-size:24px;font-weight:700}
+.stat-unit{font-size:12px;color:#786880;margin-left:4px}
+.tabs{display:flex;gap:3px;border-bottom:1px solid #22222e;margin-bottom:17px}
+.tab{padding:8px 16px 11px;font-size:13px;cursor:pointer;border:none;
+  background:transparent;color:#786880;border-bottom:2px solid transparent;
+  margin-bottom:-1px;letter-spacing:.05em}
+.tab.active{color:#e8a8c4;border-bottom-color:#e8a8c4;font-weight:600}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:10px;color:#786880;padding:9px 11px;
+  border-bottom:1px solid #22222e;letter-spacing:.12em;text-transform:uppercase}
+td{padding:10px 11px;font-size:13px;border-bottom:1px solid #181820}
+tr:hover td{background:#18181f}
+.chip{display:inline-block;padding:2px 9px;border-radius:20px;
+  font-size:11px;font-weight:600}
+.alert{border-radius:9px;padding:11px 16px;font-size:13px;margin-bottom:14px}
+.ok{background:#082818;border:1px solid #68dca044;color:#68dca0}
+.err{background:#280808;border:1px solid #f0707044;color:#f07070}
+.warn{background:#201808;border:1px solid #f0d07844;color:#f0d078}
+.badge{background:#1e0e1a;border:1px solid #b0588844;color:#e8a8c4;
+  border-radius:20px;padding:3px 12px;font-size:11px}
+.hint{font-size:11px;color:#786880;line-height:1.8;margin-top:9px}
+.live{font-size:12px;color:#68dca0}
+.pg{display:flex;justify-content:flex-end;gap:7px;margin-top:13px}
+.empty{text-align:center;color:#786880;padding:40px 0;font-size:13px}
+.foot{text-align:center;margin-top:28px;font-size:10px;color:#22222e;letter-spacing:.16em}
+.hero{text-align:center;padding:52px 24px}
+.hero-icon{font-size:42px;margin-bottom:14px}
+.hero-title{font-size:15px;color:#e8a8c4;font-weight:700;letter-spacing:.1em;margin-bottom:10px}
+.hero-sub{font-size:13px;color:#786880;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <div class="logo">✦ OLOLA</div>
+    <div class="tag">CAFE24 LIVE DASHBOARD · HMKCO2030</div>
+  </div>
+  <div style="display:flex;gap:9px;align-items:center">
+    <span id="liveTag" style="display:none" class="live">● LIVE</span>
+    <span class="badge">Vercel Proxy ✅</span>
+    <button class="btn-ghost" id="refreshBtn" style="display:none" onclick="refresh()">↻ 새로고침</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="card">
+    <div style="font-size:11px;color:#786880;letter-spacing:.16em;text-transform:uppercase;margin-bottom:13px">⚡ API 연동 설정</div>
+    <div class="row">
+      <div class="col">
+        <label>MALL ID</label>
+        <input id="mallId" value="hmkco2030">
+      </div>
+      <div class="col3">
+        <label>ACCESS TOKEN</label>
+        <input id="token" type="password" placeholder="Cafe24 Access Token 입력">
+      </div>
+      <button class="btn" onclick="connect()">연결하기</button>
+    </div>
+    <div class="hint">
+      🔗 프록시: <b style="color:#e8a8c4">olola-proxytest-6fx5.vercel.app</b> &nbsp;|&nbsp;
+      ⏱ Token 유효: <b>2시간</b> &nbsp;|&nbsp; 🔄 만료 시 Refresh Token으로 재발급
+    </div>
+  </div>
+
+  <div id="alertBox"></div>
+
+  <div id="statsGrid" style="display:none" class="grid4">
+    <div class="stat"><div class="stat-lbl">🏷 판매 상품</div><div class="stat-val"><span id="sProd">—</span><span class="stat-unit">개</span></div></div>
+    <div class="stat"><div class="stat-lbl">📦 30일 주문</div><div class="stat-val"><span id="sOrd">—</span><span class="stat-unit">건</span></div></div>
+    <div class="stat"><div class="stat-lbl">💰 30일 매출</div><div class="stat-val"><span id="sSales">—</span><span class="stat-unit">₩</span></div></div>
+    <div class="stat"><div class="stat-lbl">👥 고객 수</div><div class="stat-val"><span id="sCust">—</span><span class="stat-unit">명</span></div></div>
+  </div>
+
+  <div id="tableCard" style="display:none" class="card">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('products',this)">🏷 상품</button>
+      <button class="tab" onclick="switchTab('orders',this)">📦 주문</button>
+      <button class="tab" onclick="switchTab('customers',this)">👥 고객</button>
+    </div>
+    <div id="tableContent"></div>
+    <div class="pg">
+      <button class="btn-ghost" onclick="prevPage()">← 이전</button>
+      <span id="pageNum" style="padding:8px 5px;font-size:12px;color:#786880">1p</span>
+      <button class="btn-ghost" onclick="nextPage()">다음 →</button>
+    </div>
+  </div>
+
+  <div id="hero" class="card hero">
+    <div class="hero-icon">👁</div>
+    <div class="hero-title">OLOLA LIVE DASHBOARD</div>
+    <div class="hero-sub">
+      Mall ID: <b style="color:#ede8f2">hmkco2030</b> 사전 입력됨<br>
+      <b style="color:#ede8f2">Access Token</b>을 입력하고 연결하기를 눌러주세요.
+    </div>
+  </div>
+
+  <div class="foot">OLOLA × CAFE24 · VERCEL PROXY · HMKCO2030 · K-BEAUTY LENS</div>
+</div>
+
+<script>
+const PROXY = "https://olola-proxytest-6fx5.vercel.app/api/cafe24";
+let curTab = "products", page = 1, mallId = "", token = "";
+
+async function api(path, params={}) {
+  const q = new URLSearchParams({mallid: mallId, path, ...params}).toString();
+  const r = await fetch(`${PROXY}?${q}`, {
+    headers: {Authorization: `Bearer ${token}`, "Content-Type":"application/json"}
+  });
+  const d = await r.json();
+  if (d?.error) throw new Error(d.error_description || d.error);
+  return d;
+}
+
+function setAlert(type, text) {
+  document.getElementById("alertBox").innerHTML =
+    `<div class="alert ${type}">${text}</div>`;
+}
+
+async function connect() {
+  mallId = document.getElementById("mallId").value.trim();
+  token  = document.getElementById("token").value.trim();
+  if (!mallId || !token) { setAlert("warn","⚠ Mall ID와 Token을 입력하세요."); return; }
+  setAlert("warn","⏳ 연결 중...");
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const d30   = new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+    const [pR,oR,cR] = await Promise.all([
+      api("products",{limit:20}),
+      api("orders",{limit:20,start_date:d30,end_date:today}),
+      api("customers",{limit:20})
+    ]);
+    const prods=pR.products||[], ords=oR.orders||[], custs=cR.members||[];
+    const sales=ords.reduce((s,o)=>s+Number(o.actual_payment_amount||0),0);
+    document.getElementById("sProd").textContent  = prods.length;
+    document.getElementById("sOrd").textContent   = ords.length;
+    document.getElementById("sSales").textContent = sales.toLocaleString();
+    document.getElementById("sCust").textContent  = custs.length;
+    document.getElementById("statsGrid").style.display = "grid";
+    document.getElementById("tableCard").style.display  = "block";
+    document.getElementById("hero").style.display       = "none";
+    document.getElementById("liveTag").style.display    = "inline";
+    document.getElementById("refreshBtn").style.display = "inline";
+    window._data = {prods,ords,custs};
+    renderTable();
+    setAlert("ok",`✅ 연결 성공! 상품 ${prods.length}개 · 주문 ${ords.length}건 · 고객 ${custs.length}명`);
+  } catch(e) {
+    setAlert("err",`❌ ${e.message}`);
+  }
+}
+
+function refresh() { connect(); }
+
+function switchTab(tab, el) {
+  curTab = tab; page = 1;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  renderTable();
+}
+
+function renderTable() {
+  const d = window._data;
+  if (!d) return;
+  document.getElementById("pageNum").textContent = page + "p";
+  const SC={T:"#68dca0",F:"#f07070",P:"#f0d078"};
+  const SL={T:"판매중",F:"판매중지",P:"품절"};
+  const PC={paid:"#68dca0",unpaid:"#f07070",refund:"#f0d078"};
+  let html = "";
+  if (curTab==="products") {
+    html = `<table><thead><tr><th>NO</th><th>상품명</th><th>판매가</th><th>재고</th><th>상태</th></tr></thead><tbody>`;
+    d.prods.forEach(p=>{
+      const c=SC[p.display]||"#786880";
+      html+=`<tr><td style="color:#786880;font-size:11px">${p.product_no}</td>
+        <td>${p.product_name}</td>
+        <td style="color:#f0d078">${p.price?"₩"+Number(p.price).toLocaleString():"—"}</td>
+        <td>${p.stock_quantity??"—"}</td>
+        <td><span class="chip" style="background:${c}22;color:${c};border:1px solid ${c}44">${SL[p.display]||p.display||"—"}</span></td></tr>`;
+    });
+    html+="</tbody></table>";
+  } else if (curTab==="orders") {
+    html=`<table><thead><tr><th>주문번호</th><th>주문자</th><th>결제금액</th><th>상태</th><th>주문일시</th></tr></thead><tbody>`;
+    d.ords.forEach(o=>{
+      const c=PC[o.payment_status]||"#786880";
+      html+=`<tr><td style="color:#786880;font-size:11px">${o.order_id}</td>
+        <td>${o.billing_name||"—"}</td>
+        <td style="color:#f0d078">₩${Number(o.actual_payment_amount||0).toLocaleString()}</td>
+        <td><span class="chip" style="background:${c}22;color:${c};border:1px solid ${c}44">${o.payment_status}</span></td>
+        <td style="color:#786880;font-size:11px">${(o.order_date||"").slice(0,16).replace("T"," ")||"—"}</td></tr>`;
+    });
+    html+="</tbody></table>";
+  } else {
+    html=`<table><thead><tr><th>회원ID</th><th>이름</th><th>이메일</th><th>총주문금액</th><th>가입일</th></tr></thead><tbody>`;
+    d.custs.forEach(c=>{
+      html+=`<tr><td style="color:#e8a8c4">${c.member_id}</td>
+        <td>${c.name||"—"}</td>
+        <td style="color:#786880;font-size:12px">${c.email||"—"}</td>
+        <td style="color:#f0d078">${c.total_order_amount?"₩"+Number(c.total_order_amount).toLocaleString():"—"}</td>
+        <td style="color:#786880;font-size:11px">${(c.created_date||"").slice(0,10)||"—"}</td></tr>`;
+    });
+    html+="</tbody></table>";
+  }
+  document.getElementById("tableContent").innerHTML = html || `<div class="empty">데이터 없음</div>`;
+}
+
+function prevPage(){if(page>1){page--;document.getElementById("pageNum").textContent=page+"p";}}
+function nextPage(){page++;document.getElementById("pageNum").textContent=page+"p";}
+</script>
+</body>
+</html>
