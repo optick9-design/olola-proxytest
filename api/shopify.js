@@ -1,11 +1,20 @@
 // api/shopify.js — 토큰 자동 갱신 포함 Shopify 프록시
-let cachedToken = null;
-let tokenExpiry = 0;
+
+// 토큰 캐시는 store(테넌트)별로 분리한다. 전역 단일 캐시는 여러 store가
+// 같은 토큰을 공유하게 되어, 한 store의 토큰이 다른 store 요청에 새어나간다.
+const tokenCache = new Map(); // store -> { token, expiry }
+
+// 테스트에서 캐시를 초기화하기 위한 헬퍼 (서버리스 모듈 상태 격리용)
+export function _resetTokenCache(store) {
+  if (store) tokenCache.delete(store);
+  else tokenCache.clear();
+}
 
 async function getValidToken(store, clientId, clientSecret) {
   const now = Date.now();
-  if (cachedToken && tokenExpiry - now > 3600 * 1000) {
-    return cachedToken;
+  const cached = tokenCache.get(store);
+  if (cached && cached.expiry - now > 3600 * 1000) {
+    return cached.token;
   }
   const r = await fetch(`https://${store}/admin/oauth/access_token`, {
     method: "POST",
@@ -20,10 +29,12 @@ async function getValidToken(store, clientId, clientSecret) {
   if (!data.access_token) {
     throw new Error("토큰 발급 실패: " + JSON.stringify(data.errors || data));
   }
-  cachedToken = data.access_token;
-  tokenExpiry = now + (data.expires_in || 86400) * 1000;
-  console.log(`[${new Date().toISOString()}] 새 Shopify 토큰 발급 완료`);
-  return cachedToken;
+  tokenCache.set(store, {
+    token: data.access_token,
+    expiry: now + (data.expires_in || 86400) * 1000,
+  });
+  console.log(`[${new Date().toISOString()}] 새 Shopify 토큰 발급 완료 (${store})`);
+  return data.access_token;
 }
 
 export default async function handler(req, res) {
@@ -63,7 +74,7 @@ export default async function handler(req, res) {
     });
 
     if (r.status === 401) {
-      cachedToken = null; tokenExpiry = 0;
+      tokenCache.delete(store);
       const clientId     = req.headers["x-shopify-client-id"]     || process.env.SHOPIFY_CLIENT_ID;
       const clientSecret = req.headers["x-shopify-client-secret"] || process.env.SHOPIFY_CLIENT_SECRET;
       if (clientId && clientSecret) {
